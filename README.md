@@ -23,7 +23,7 @@
 
 #### 二、后台管理系统
 
-1. 直接在主工程里导入![人人开源](https://gitee.com/renrenio)的后台管理系统源码
+1. 直接在主工程里导入[人人开源](https://gitee.com/renrenio)的后台管理系统源码
 
 2. 创建后台管理系统数据库
 
@@ -33,7 +33,7 @@
 
 5. 新建common功能模块，设置共有依赖、bean、配置文件等
 
-6. 配置![人人开源](https://gitee.com/renrenio)的逆向工程生成器逆向代码，配置mybatis+和数据源，测试基础crud
+6. 配置[人人开源](https://gitee.com/renrenio)的逆向工程生成器逆向代码，配置mybatis+和数据源，测试基础crud
 
 7. 第一次push代码
 
