@@ -28,6 +28,7 @@ import com.atguigu.common.utils.R;
 @RestController
 @RequestMapping("coupon/coupon")
 public class CouponController {
+    // 自动装配
     @Autowired
     private CouponService couponService;
 
