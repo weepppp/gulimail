@@ -13,7 +13,7 @@
 
 4. 在idea上配置ignore文件设置，搭建聚合maven工程框架
 
-5. 第二次push到github
+5. 第一次push到github
 
 6. 创建各模块数据库，导入数据库文件
 
@@ -35,7 +35,7 @@
 
 6. 配置[人人开源](https://gitee.com/renrenio)的逆向工程生成器逆向代码，配置mybatis+和数据源，测试基础crud
 
-7. 第一次push代码
+7. 第二次push代码
 
    
 
