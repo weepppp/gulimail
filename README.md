@@ -13,7 +13,7 @@
 
 4. 在idea上配置ignore文件设置，搭建聚合maven工程框架
 
-5. 第一次push到github
+5. 第二次push到github
 
 6. 创建各模块数据库，导入数据库文件
 
