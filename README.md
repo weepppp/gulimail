@@ -13,7 +13,7 @@
 
 4. 在idea上配置ignore文件设置，搭建聚合maven工程框架
 
-5. 第一次push到github
+5. 第一次push
 
 6. 创建各模块数据库，导入数据库文件
 
@@ -35,7 +35,7 @@
 
 6. 配置[人人开源](https://gitee.com/renrenio)的逆向工程生成器逆向代码，配置mybatis+和数据源，测试基础crud
 
-7. 第二次push代码
+7. 第二次push
 
    
  
@@ -44,9 +44,14 @@
 #### 使用spring-cloud-alibaba系列组件进行分布式配置
 
 以下1和2配置的使用步骤均已通过【gulimall-coupon模块的CouponController类】和【gulimall-coupon模块的MemberController类】进行了注解说明，可查看[官方文档](https://github.com/alibaba/spring-cloud-alibaba)进行完整配置
+
 1. 使用Nacos：作为注册中心和配置中心----给每一个功能模块以及Nacos服务页进行配置
+
 2. 配置feign：远程转发某台服务器的请求到已经注册过的其他服务器上
+
 3. 使用gateway：提供路由服务，支持断言，底层是netty
+
+4. 第三次push
 
   
 
