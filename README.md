@@ -41,7 +41,7 @@
  
 #### 三、分布式组件配置 
 
-#### 使用spring-cloud-alibaba系列组件进行分布式配置
+##### *使用spring-cloud-alibaba系列组件进行分布式配置*
 
 以下1和2配置的使用步骤均已通过【gulimall-coupon模块的CouponController类】和【gulimall-coupon模块的MemberController类】进行了注解说明，可查看[官方文档](https://github.com/alibaba/spring-cloud-alibaba)进行完整配置
 
