@@ -9,7 +9,7 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
  * @功能  [开启服务的注册发现]
  */
 @EnableDiscoveryClient
-@SpringBootApplication()
+@SpringBootApplication(exclude = {DataSourceAutoConfiguration.class})
 public class GulimallGatewayApplication {
 
     public static void main(String[] args) {
