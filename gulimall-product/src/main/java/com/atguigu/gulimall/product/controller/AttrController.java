@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Map;
 
 
+import com.atguigu.gulimall.product.vo.AttrGroupRelationVo;
 import com.atguigu.gulimall.product.vo.AttrRespVo;
 import com.atguigu.gulimall.product.vo.AttrVo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,9 +30,11 @@ public class AttrController {
     @Autowired
     private AttrService attrService;
 
-    @GetMapping("/base/list/{catelogId}")
-    public R baseAttrList(@RequestParam Map<String, Object> params,@PathVariable("catelogId")Long catelogId){
-        PageUtils page = attrService.queryBaseAttrPAge(params,catelogId);
+    @GetMapping("/{attrType}/list/{catelogId}")
+    public R baseAttrList(@RequestParam Map<String, Object> params
+                            ,@PathVariable("catelogId")Long catelogId
+                            ,@PathVariable("attrType")String type ){
+        PageUtils page = attrService.queryBaseAttrPAge(params,catelogId,type);
         return R.ok().put("page", page);
     }
 
