@@ -3,19 +3,33 @@ package com.atguigu.gulimall.product;
 import com.aliyun.oss.*;
 import com.atguigu.gulimall.product.entity.BrandEntity;
 import com.atguigu.gulimall.product.service.BrandService;
+import com.atguigu.gulimall.product.service.CategoryService;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.util.Arrays;
+
 
 @SpringBootTest
 class GulimallProductApplicationTests {
 
     @Autowired
     BrandService brandService;
+
+    @Autowired
+    CategoryService categoryService;
+
+//    @Test
+//    public void testFindPath(){
+//        Long[] catelogPath = categoryService.findCatelogPath(225L);
+//        log.info("完整路径:{}", Arrays.asList(catelogPath));
+//    }
 
     @Test
     void contextLoads() {
@@ -34,6 +48,8 @@ class GulimallProductApplicationTests {
 
     @Autowired
     OSSClient ossClient;
+
+
     @Test
     public void testUpload() throws FileNotFoundException {
         // Endpoint以华东1（杭州）为例，其它Region请按实际情况填写。

@@ -1,12 +1,14 @@
 package com.atguigu.gulimall.product.service.impl;
 
 import com.atguigu.common.utils.Query;
+import com.atguigu.gulimall.product.service.CategoryBrandRelationService;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -17,13 +19,17 @@ import com.atguigu.common.utils.PageUtils;
 import com.atguigu.gulimall.product.dao.CategoryDao;
 import com.atguigu.gulimall.product.entity.CategoryEntity;
 import com.atguigu.gulimall.product.service.CategoryService;
+import org.springframework.transaction.annotation.Transactional;
 
-
+@Slf4j
 @Service("categoryService")
 public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity> implements CategoryService {
 
 //    @Autowired
 //    private CategoryDao categoryDao;
+    @Autowired
+    CategoryBrandRelationService categoryBrandRelationService;
+
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -57,6 +63,36 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
 
         return level1Menus;
     }
+
+    @Override
+    public Long[] findCatelogPath(Long cateId) {
+        List<Long> paths = new ArrayList<>();
+        List<Long> parentPath = findParentPath(cateId, paths);
+        Collections.reverse(parentPath);
+        return parentPath.toArray(new Long[parentPath.size()]);
+    }
+
+    /**
+     * @功能  [级联更新所有关联的数据]
+     */
+    @Transactional
+    @Override
+    public void updateCascade(CategoryEntity category) {
+        this.updateById(category);
+        categoryBrandRelationService.updateCategory(category.getCatId(),category.getName());
+
+    }
+
+    private List<Long> findParentPath(Long cateId,List<Long> paths) {
+        paths.add(cateId);
+        CategoryEntity id = this.getById(cateId);
+        if (id.getParentCid() != 0) {
+            findParentPath(id.getParentCid(),paths);
+        }
+        return  paths;
+    }
+
+
 
     // 递归查找所有菜单的子菜单
     private List<CategoryEntity> getChildrens(CategoryEntity root,List<CategoryEntity> all) {
