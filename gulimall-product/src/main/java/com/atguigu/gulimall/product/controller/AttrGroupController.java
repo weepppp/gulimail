@@ -6,9 +6,11 @@ import java.util.Map;
 
 
 import com.atguigu.gulimall.product.entity.AttrEntity;
+import com.atguigu.gulimall.product.service.AttrAttrgroupRelationService;
 import com.atguigu.gulimall.product.service.AttrService;
 import com.atguigu.gulimall.product.service.CategoryService;
 import com.atguigu.gulimall.product.vo.AttrGroupRelationVo;
+import com.atguigu.gulimall.product.vo.AttrGroupWithAttrsVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,10 +39,35 @@ public class AttrGroupController {
     @Autowired
     AttrService attrService;
 
+    @Autowired
+    AttrAttrgroupRelationService relationService;
+
+    @PostMapping("/attr/relation")
+    public R addRelation(@RequestBody List<AttrGroupRelationVo> vos) {
+        relationService.saveBatch(vos);
+        return  R.ok();
+    }
+
+    @GetMapping("/{catelogId}/withattr")
+    public R getAttrGroupWithAttrs(@PathVariable("catelogId")Long catelogId){
+        /**
+         * @功能 [查出当前分类下的所有属性+查出每个属性分组的所有信息]
+         */
+       List<AttrGroupWithAttrsVo> vos =  attrGroupService.getAttrGroupWithAttrsByCatelogId(catelogId);
+       return R.ok().put("data",vos);
+
+    }
+
     @GetMapping("{attrgroupId}/attr/relation")
     public R attrRelation(@PathVariable("attrgroupId") long attrgroupId){
             List<AttrEntity> entities = attrService.getRelationAttr(attrgroupId);
             return R.ok().put("data",entities);
+    }
+
+    @GetMapping("{attrgroupId}/noattr/relation")
+    public R attrNoRelation(@PathVariable("attrgroupId") long attrgroupId,@RequestParam Map<String, Object> params){
+        PageUtils page = attrService.getNoRelationAttr(params,attrgroupId);
+        return R.ok().put("page",page);
     }
 
     @PostMapping("/attr/relation/delete")

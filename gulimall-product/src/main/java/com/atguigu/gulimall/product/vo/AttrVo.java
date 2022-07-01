@@ -1,12 +1,8 @@
 package com.atguigu.gulimall.product.vo;
 
-import com.baomidou.mybatisplus.annotation.TableId;
+
 import lombok.Data;
 
-/**
- * @author weepppp 2022/6/30 19:15
- * @version V1.0
- **/
 @Data
 public class AttrVo {
     /**
