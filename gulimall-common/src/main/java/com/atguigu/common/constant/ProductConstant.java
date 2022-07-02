@@ -1,4 +1,4 @@
-package com.atguigu.common;
+package com.atguigu.common.constant;
 
 /**
  * @author weepppp 2022/6/30 22:47

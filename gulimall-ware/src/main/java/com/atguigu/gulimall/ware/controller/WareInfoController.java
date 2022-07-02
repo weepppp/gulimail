@@ -41,7 +41,6 @@ public class WareInfoController {
         return R.ok().put("page", page);
     }
 
-
     /**
      * 信息
      */
