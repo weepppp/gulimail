@@ -9,11 +9,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.UUID;
 
 
 @SpringBootTest
@@ -25,33 +28,31 @@ class GulimallProductApplicationTests {
     @Autowired
     CategoryService categoryService;
 
-//    @Test
-//    public void testFindPath(){
-//        Long[] catelogPath = categoryService.findCatelogPath(225L);
-//        log.info("完整路径:{}", Arrays.asList(catelogPath));
-//    }
+    @Autowired
+    StringRedisTemplate stringRedisTemplate;
+
+
 
     @Test
     void contextLoads() {
-        BrandEntity brandEntity = new BrandEntity();
-        brandEntity.setBrandId(1L);
-        brandEntity.setName("特斯拉");
-        brandService.updateById(brandEntity);
-        System.out.println("修改成功......");
+        ValueOperations<String, String> ops = stringRedisTemplate.opsForValue();
+        ops.set("hello","world"+ UUID.randomUUID().toString());
+        String hello = ops.get("hello");
+        System.out.println(hello.toString());
     }
-
 
 
     /**
      * @功能  [测试阿里云OSS对象存储]
      */
 
-    @Autowired
-    OSSClient ossClient;
+//    @Autowired
+//    OSSClient ossClient;
+
+//    @Test
+//    public void testUpload() throws FileNotFoundException {
 
 
-    @Test
-    public void testUpload() throws FileNotFoundException {
         // Endpoint以华东1（杭州）为例，其它Region请按实际情况填写。
 //        String endpoint = "oss-cn-hangzhou.aliyuncs.com";
 //        // 阿里云账号AccessKey拥有所有API的访问权限，风险很高。强烈建议您创建并使用RAM用户进行API访问或日常运维，请登录RAM控制台创建RAM用户。
@@ -64,14 +65,22 @@ class GulimallProductApplicationTests {
         // 填写本地文件的完整路径，例如D:\\localpath\\examplefile.txt。
         // 如果未指定本地路径，则默认从示例程序所属项目对应本地路径中上传文件流。
 //        String filePath= "D:\\localpath\\examplefile.txt";
-
         // 创建OSSClient实例。
 //        OSS ossClient = new OSSClientBuilder().build(endpoint, accessKeyId, accessKeySecret);
-
 //        try {
-            InputStream inputStream = new FileInputStream("C:\\Users\\zoeak\\Desktop\\Pictures\\002.png");
+
+
+//            InputStream inputStream = new FileInputStream("C:\\Users\\zoeak\\Desktop\\Pictures\\002.png");
+
+
             // 创建PutObject请求。
-            ossClient.putObject("gulimall0822", "002.png", inputStream);
+
+
+
+//            ossClient.putObject("gulimall0822", "002.png", inputStream);
+
+
+
 //        } catch (OSSException oe) {
 //            System.out.println("Caught an OSSException, which means your request made it to OSS, "
 //                    + "but was rejected with an error response for some reason.");
@@ -86,8 +95,14 @@ class GulimallProductApplicationTests {
 //            System.out.println("Error Message:" + ce.getMessage());
 //        } finally {
 //            if (ossClient != null) {
-                ossClient.shutdown();
-        System.out.println("上传完成");
-            }
+
+
+
+//                ossClient.shutdown();
+
+
+
+//        System.out.println("上传完成");
+//            }
         }
 
