@@ -9,6 +9,9 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import jdk.nashorn.internal.scripts.JS;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
+import org.redisson.Redisson;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
@@ -40,6 +43,9 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
 
     @Autowired
     private StringRedisTemplate redisTemplate;
+
+    @Autowired
+    RedissonClient redisson;
 
 
     @Override
@@ -120,29 +126,34 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         /**
          * @功能 一级分类的id+二三级分类资源的查找展示
          */
-//        synchronized (this) {  // 这里的this是本地锁，多个微服务就会有多个锁，也就是有多个线程进入项目，并不满足只有单线程的要求，所有我们需要分布式锁
-        String s = UUID.randomUUID().toString();
-        Boolean lock = redisTemplate.opsForValue().setIfAbsent("lock", s, 300, TimeUnit.SECONDS); // 升级成分布式锁+设置锁的过期时间
-        Map<String, List<Catelog2Vo>> stringListMap;
-        if (lock) {
-            try {
-                stringListMap = getStringListMap();
-            } finally {
-                //获取值对比+对比成功删除=原子操作  lua脚本解锁
-                String script = "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end";
-                Long lock1 = redisTemplate.execute(new DefaultRedisScript<Long>(script, Long.class), Arrays.asList("lock"), s);
-            }
-            return stringListMap;
-        } else {
-            // 加锁失败，重试
-            try {
-                Thread.sleep(200);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            return getCatalogJsonFromDb(); // 自旋的方式
-        }
 
+        // >>>>>> 终极版：这里使用redisson分布式高性能锁
+        RLock lock = redisson.getLock("catalogJson-lock");
+        lock.lock();
+//      synchronized (this) {  // 1.>>>>>>这里的this是本地锁，多个微服务就会有多个锁，也就是有多个线程进入项目，并不满足只有单线程的要求，所有我们需要分布式锁
+//        String s = UUID.randomUUID().toString();
+//        Boolean lock = redisTemplate.opsForValue().setIfAbsent("lock", s, 300, TimeUnit.SECONDS); // >>>>>>这里是普通redis分布式锁+设置锁的过期时间
+        Map<String, List<Catelog2Vo>> stringListMap;
+//        if (lock) {
+        try {
+            stringListMap = getStringListMap();
+        } finally {
+            lock.unlock();
+//                //普通redis分布式锁   获取值对比+对比成功删除=原子操作>>防止死锁情况下误删除其他锁的情况
+//                String script = "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end";
+//                Long lock1 = redisTemplate.execute(new DefaultRedisScript<Long>(script, Long.class), Arrays.asList("lock"), s);
+//            }
+//            return stringListMap;
+//        } else {
+//            // 加锁失败，重试
+//            try {
+//                Thread.sleep(200);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//            return getCatalogJsonFromDb(); // 自旋的方式
+        }
+        return stringListMap;
     }
 
     private Map<String, List<Catelog2Vo>> getStringListMap() {
