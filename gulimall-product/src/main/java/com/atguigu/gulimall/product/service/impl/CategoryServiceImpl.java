@@ -13,6 +13,9 @@ import org.redisson.Redisson;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
@@ -89,6 +92,12 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         return parentPath.toArray(new Long[parentPath.size()]);
     }
 
+
+//    @Caching(evict = {
+//            @CacheEvict(value = "category", key = "'getLevel1Categorys'"),
+//            @CacheEvict(value = "category", key = "'getCatalogJson'"),
+//    })
+    @CacheEvict(value = "category",allEntries = true)  // 此处用失效模式：有写操作就删除缓存  还有双写模式：写完数据库之后再去写缓存，保持缓存一致性
     @Transactional
     @Override
     public void updateCascade(CategoryEntity category) {
@@ -99,6 +108,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         categoryBrandRelationService.updateCategory(category.getCatId(), category.getName());
     }
 
+    @Cacheable(value = {"category"}, key = "#root.method.name")
     @Override
     public List<CategoryEntity> getLevel1Categorys() {
         Long l = System.currentTimeMillis();
@@ -107,19 +117,36 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         return entities;
     }
 
-    // redis分布式缓存存取数据：
+    // 原：redis分布式缓存存取数据  现：springCache
     // 解决缓存击穿（锁）+缓存雪崩（设置过期时间）
+    @Cacheable(value = {"category"}, key = "#root.method.name")
     @Override
     public Map<String, List<Catelog2Vo>> getCatalogJson() {
-        String catalogJson = redisTemplate.opsForValue().get("catalogJson");
-        if (StringUtils.isEmpty(catalogJson)) {
-            Map<String, List<Catelog2Vo>> catalogJsonFromDb = getCatalogJsonFromDb();
-            return catalogJsonFromDb;
-        }
-        Map<String, List<Catelog2Vo>> stringListMap = JSON.parseObject(catalogJson, new TypeReference<Map<String, List<Catelog2Vo>>>() {
-        });
-        return stringListMap;
+        List<CategoryEntity> level1Categorys = getLevel1Categorys();
+        System.out.println(level1Categorys.toString());
+        Map<String, List<Catelog2Vo>> map = level1Categorys.stream().collect(Collectors.toMap(k -> k.getCatId().toString(), v -> {
+            List<CategoryEntity> entities = baseMapper.selectList(new QueryWrapper<CategoryEntity>().eq("parent_cid", v.getCatId()));
+            List<Catelog2Vo> catelog2VoList = null;
+            if (entities != null) {
+                catelog2VoList = entities.stream().map(item -> {
+                    Catelog2Vo catelog2Vo = new Catelog2Vo(v.getCatId().toString(), null, item.getCatId().toString(), item.getName());
+                    List<CategoryEntity> entities1 = baseMapper.selectList(new QueryWrapper<CategoryEntity>().eq("parent_cid", item.getCatId()));
+                    if (entities1 != null) {
+                        List<Catelog2Vo.Catelog3Vo> catelog3VoList = entities1.stream().map(l3 -> {
+                            Catelog2Vo.Catelog3Vo catelog3Vo = new Catelog2Vo.Catelog3Vo(item.getCatId().toString(), l3.getCatId().toString(), l3.getName());
+                            return catelog3Vo;
+                        }).collect(Collectors.toList());
+                        catelog2Vo.setCatalog3List(catelog3VoList);
+                    }
+                    return catelog2Vo;
+                }).collect(Collectors.toList());
+            }
+            return catelog2VoList;
+        }));
+        return map;
     }
+
+
 
     // 从数据库查询并封装分类数据
     public Map<String, List<Catelog2Vo>> getCatalogJsonFromDb() {
@@ -127,12 +154,14 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
          * @功能 一级分类的id+二三级分类资源的查找展示
          */
 
-        // >>>>>> 终极版：这里使用redisson分布式高性能锁
+        /**
+         * @终极版： 这里使用redisson分布式高性能锁
+         */
         RLock lock = redisson.getLock("catalogJson-lock");
         lock.lock();
 //      synchronized (this) {  // 1.>>>>>>这里的this是本地锁，多个微服务就会有多个锁，也就是有多个线程进入项目，并不满足只有单线程的要求，所有我们需要分布式锁
 //        String s = UUID.randomUUID().toString();
-//        Boolean lock = redisTemplate.opsForValue().setIfAbsent("lock", s, 300, TimeUnit.SECONDS); // >>>>>>这里是普通redis分布式锁+设置锁的过期时间
+//        Boolean lock = redisTemplate.opsForValue().setIfAbsent("lock", s, 300, TimeUnit.SECONDS); // 2.>>>>>>这里是普通redis分布式锁+设置锁的过期时间
         Map<String, List<Catelog2Vo>> stringListMap;
 //        if (lock) {
         try {
