@@ -1,9 +1,6 @@
-# gulimall
-```
-BtoC：电商客户前台+管理后台
-前端VUE  +  后端springCloud微服务分布式集群
-```
-
+### *前端VUE  +  后端springCloud微服务分布式集群*
+### *BtoC：电商客户前台+管理后台*
+---
 ### 一、环境搭建
 
 1. 配置linux和docker--mysql、redis
